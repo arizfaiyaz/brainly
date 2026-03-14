@@ -2,11 +2,19 @@ import express from 'express';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import z from 'zod';
+import dotenv from 'dotenv';
+dotenv.config();
+import { UserModel } from './db.js';
 // import bcrypt from 'bcrypt';
 
-import { UserModel } from './db.js';
-
 const app = express();
+app.use(express.json());
+
+const MONGO_URL = process.env.MONGO_URL;
+if (!MONGO_URL) {
+    throw new Error('MONGO_URL environment variable is not defined');
+}
+mongoose.connect(MONGO_URL);
 
 app.post('/api/v1/signup', async (req, res) => {
     //zod validation for req.body
