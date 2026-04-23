@@ -142,16 +142,16 @@ app.get('/api/v1/brain/:shareLink', userMiddleware, async (req, res) => {
     const hash = req.params.shareLink as string;
     const link = await LinkModel.findOne({
         hash
-    })
+    });
     if(!link) {
-        res.status(404).json({
+        return res.status(404).json({
             message: "User not found"
-        })
+        });
     }
 
     const content = await ContentModel.findOne({
         userId: link.userId
-    })
+    });
     const user = await UserModel.findOne({
         _id: link.userId
     });
