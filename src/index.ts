@@ -1,25 +1,24 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
-import z from 'zod';
 import dotenv from 'dotenv';
 dotenv.config();
-import { UserModel } from './db.js';
-import bcrypt from 'bcrypt';
+import { ContentModel, UserModel } from './db.js';
+import { userMiddleware } from './middleware.js';
+import { JWT_PASSWORD } from './config.js';
 
 const app = express();
 app.use(express.json());
 
-const JWT_PASSWORD = process.env.JWT_PASSWORD;
-if (!JWT_PASSWORD) {
-    throw new Error('JWT_PASSWORD environment variable is not defined');
-}
+
+
 const MONGO_URL = process.env.MONGO_URL;
 if (!MONGO_URL) {
     throw new Error('MONGO_URL environment variable is not defined');
 }
 mongoose.connect(MONGO_URL);
 
+// User signup
 app.post('/api/v1/signup', async (req, res) => {
     //zod validation for req.body
     const username = req.body.username;
@@ -40,10 +39,12 @@ app.post('/api/v1/signup', async (req, res) => {
     })
 }
 });
- 
-app.post('/api/v1/signin', async (req, res) => {
 
+// User signup
+app.post('/api/v1/signin', async (req, res) => {
+try{
     const { username, password } = req.body;
+    
     const user = await UserModel.findOne({
         username, password
     });
@@ -52,25 +53,58 @@ app.post('/api/v1/signin', async (req, res) => {
             message: "User not found"
         });
     }
-    const token = jwt.sign({ id: user._id }, JWT_PASSWORD);
+    const token = jwt.sign({ id: user._id }, JWT_PASSWORD, { expiresIn: '1d' });
 
-    res.json({ token });
-
-});
-
-app.get('/api/v1/content', (req, res) => {
-
-});
-
-app.delete('/api/v1/content', (req, res) => {
+     res.json({ token });
+} catch (error) {
+    res.status(500).json({
+        message: "Internal server error"
+    });
+}
 
 });
 
-app.post('/api/v1/brain/share', (req, res) => {
+app.post('/api/v1/content', userMiddleware, async (req, res) => {
+    const { link, title, type } = req.body;
+
+    await ContentModel.create({
+        link,
+        type,
+        title,
+        //@ts-ignore
+        userId: req.userId,
+        tags: [
+
+        ]
+    })
+
+    return res.json({
+        message: "Content Added successfully"
+    })
+});
+
+app.get('/api/v1/content', userMiddleware, async (req, res) => {
+    //@ts-ignore
+    const userId = req.userId;
+    const content = await ContentModel.find({
+         userId: userId 
+        }).populate('userId', 'username');
+
+    return res.json({
+        content
+    })
+});
+
+
+app.delete('/api/v1/content', userMiddleware, (req, res) => {
 
 });
 
-app.get('/api/v1/brain/:shareLink', (req, res) => {
+app.post('/api/v1/brain/share', userMiddleware, (req, res) => {
+
+});
+
+app.get('/api/v1/brain/:shareLink', userMiddleware, (req, res) => {
 
 });
 
