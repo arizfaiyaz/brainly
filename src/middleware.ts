@@ -6,7 +6,7 @@ export const userMiddleware = (req: Request, res: Response, next: NextFunction) 
     const header = req.headers['authorization'];
     const decoded = Jwt.verify(header as string, JWT_PASSWORD as string);
     if(decoded) {
-        //@ts-ignore
+         // @ts-ignore
         req.userId = decoded.id
         next();
     } else {
