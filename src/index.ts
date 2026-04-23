@@ -8,7 +8,7 @@ import { userMiddleware } from './middleware.js';
 import { JWT_PASSWORD } from './config.js';
 import { hash } from 'bcrypt';
 import { random } from './utils.js';
-import cors from "cors";
+
 const app = express();
 app.use(express.json());
 
@@ -73,7 +73,7 @@ app.post('/api/v1/content', userMiddleware, async (req, res) => {
         link,
         title,
         
-        userId: req.userId,
+        userId: new mongoose.Types.ObjectId(req.userId),
         tags: [
 
         ]
@@ -86,7 +86,7 @@ app.post('/api/v1/content', userMiddleware, async (req, res) => {
 
 app.get('/api/v1/content', userMiddleware, async (req, res) => {
     //@ts-ignore
-    const userId = req.userId;
+    const userId = new mongoose.Types.ObjectId(req.userId);
     const content = await ContentModel.find({
          userId: userId 
         }).populate('userId', 'username');
@@ -103,7 +103,7 @@ app.delete('/api/v1/content', userMiddleware, async (req, res) => {
     await ContentModel.deleteMany({
         contentId,
 
-        userId: req.userId
+        userId: new mongoose.Types.ObjectId(req.userId)
     });
     res.json({
         message: "Content deleted successfully"
@@ -115,7 +115,7 @@ app.post('/api/v1/brain/share', userMiddleware, async (req, res) => {
     const { share } = req.body;
     if(share) {
         const existingLink = await LinkModel.findOne({
-            userId: req.userId
+            userId: new mongoose.Types.ObjectId(req.userId)
         });
         if(existingLink) {
             res.json({
@@ -124,13 +124,13 @@ app.post('/api/v1/brain/share', userMiddleware, async (req, res) => {
         }
         const hash = random(10);
         await LinkModel.create({
-            userId: req.userId,
+            userId: new mongoose.Types.ObjectId(req.userId),
             hash
         });
         res.json({ hash });
         } else {
             await LinkModel.deleteOne({
-                userId: req.userId
+                userId: new mongoose.Types.ObjectId(req.userId)
             });
             res.json({
                 message: "Link deleted successfully"
@@ -139,7 +139,7 @@ app.post('/api/v1/brain/share', userMiddleware, async (req, res) => {
 });
 
 app.get('/api/v1/brain/:shareLink', userMiddleware, async (req, res) => {
-    const hash = req.params.shareLink;
+    const hash = req.params.shareLink as string;
     const link = await LinkModel.findOne({
         hash
     })
@@ -149,7 +149,7 @@ app.get('/api/v1/brain/:shareLink', userMiddleware, async (req, res) => {
         })
     }
 
-    const content = await ContentModel.find({
+    const content = await ContentModel.findOne({
         userId: link.userId
     })
     const user = await UserModel.findOne({
