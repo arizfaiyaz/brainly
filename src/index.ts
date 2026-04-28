@@ -112,7 +112,7 @@ app.delete('/api/v1/content', userMiddleware, async (req, res) => {
 
 // Route 6: SHare Content link
 app.post('/api/v1/brain/share', userMiddleware, async (req, res) => {
-    const { share } = req.body;
+    const  share  = req.body.share;
     if(share) {
         const existingLink = await LinkModel.findOne({
             userId: new mongoose.Types.ObjectId(req.userId)
