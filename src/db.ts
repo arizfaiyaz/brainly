@@ -28,14 +28,12 @@ export { ContentModel };
 
 const LinkSchema = new Schema({
     hash: String,
-    link: String,
     userId: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true,
         unique: true
-    },
-    tags: [{type: Schema.Types.ObjectId, ref: 'Tag'}],
+    }
 });
 
 export const LinkModel = model("Link", LinkSchema);
