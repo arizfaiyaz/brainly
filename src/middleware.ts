@@ -1,17 +1,22 @@
 import type { Request, Response, NextFunction } from "express";
 import  Jwt  from "jsonwebtoken";
-const JWT_PASSWORD = process.env.JWT_PASSWORD;
+import { JWT_PASSWORD } from "./config.js";
 
 export const userMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const header = req.headers['authorization'];
-    const decoded = Jwt.verify(header as string, JWT_PASSWORD as string);
-    if(decoded) {
-         // @ts-ignore
-        req.userId = decoded.id
+    if(!header){
+        return res.status(401).json({
+            message: "Unauthorized"
+        });
+    }
+    try {
+        const token = header.split(' ')[1] || header;
+        const decoded = Jwt.verify(token, JWT_PASSWORD as string) as Jwt.JwtPayload;
+        req.userId = decoded.id;
         next();
-    } else {
-        res.status(403).json({
-            message: "not logged in"
+    } catch (error) {
+        return res.status(403).json({
+            message: "Unauthorized"
         });
     }
 }
