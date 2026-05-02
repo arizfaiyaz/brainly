@@ -111,7 +111,7 @@ app.delete('/api/v1/content', userMiddleware, async (req, res) => {
 });
 
 // Route 6: SHare Content link
-app.post('/api/v1/brain/share', userMiddleware, async (req, res) => {
+app.post('/api/v1/share', userMiddleware, async (req, res) => {
     const share  = req.body.share;
     if(share) {
         const existingLink = await LinkModel.findOne({
@@ -127,7 +127,7 @@ app.post('/api/v1/brain/share', userMiddleware, async (req, res) => {
             userId: new mongoose.Types.ObjectId(req.userId),
             hash
         });
-        res.json({ hash });
+        res.json({message: "/share/" + hash });
         } else {
             await LinkModel.deleteOne({
                 userId: new mongoose.Types.ObjectId(req.userId)
@@ -138,7 +138,7 @@ app.post('/api/v1/brain/share', userMiddleware, async (req, res) => {
         }
 });
 
-app.get('/api/v1/brain/:shareLink', userMiddleware, async (req, res) => {
+app.get('/api/v1/shareLink', userMiddleware, async (req, res) => {
     const hash = req.params.shareLink as string;
     const link = await LinkModel.findOne({
         hash
