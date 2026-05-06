@@ -138,7 +138,7 @@ app.post('/api/v1/share', userMiddleware, async (req, res) => {
         }
 });
 
-app.get('/api/v1/shareLink', userMiddleware, async (req, res) => {
+app.get('/api/v1/:shareLink', userMiddleware, async (req, res) => {
     const hash = req.params.shareLink as string;
     const link = await LinkModel.findOne({
         hash
@@ -149,9 +149,12 @@ app.get('/api/v1/shareLink', userMiddleware, async (req, res) => {
         });
     }
 
+    // UserId
     const content = await ContentModel.findOne({
         userId: link.userId
     });
+    console.log(link);
+    
     const user = await UserModel.findOne({
         _id: link.userId
     });
